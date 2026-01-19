@@ -9,12 +9,15 @@ import type { Recipe } from "@/app/types/recipe";
 
 const RECIPES_PER_PAGE = 3;
 
-interface RecipeGeneratorProps {
-  initialRecipes: Recipe[];
+interface RecipeListProps {
+  recipes: Recipe[];
+  onRecipesChange: (recipes: Recipe[] | ((prev: Recipe[]) => Recipe[])) => void;
 }
 
-export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
-  const [recipes, setRecipes] = useState<Recipe[]>(() => initialRecipes);
+export function RecipeList({
+  recipes,
+  onRecipesChange,
+}: RecipeListProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -25,7 +28,7 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
   const totalPages = Math.ceil(recipes.length / RECIPES_PER_PAGE);
   const currentRecipes = recipes.slice(
     currentPage * RECIPES_PER_PAGE,
-    (currentPage + 1) * RECIPES_PER_PAGE
+    (currentPage + 1) * RECIPES_PER_PAGE,
   );
 
   const handleGenerate = useCallback(() => {
@@ -35,7 +38,7 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
       const result = await generateRecipes();
 
       if (result.success) {
-        setRecipes((prev) => {
+        onRecipesChange((prev: Recipe[]) => {
           const newRecipes = [...prev, ...result.recipes];
           const newTotalPages = Math.ceil(newRecipes.length / RECIPES_PER_PAGE);
           setCurrentPage(newTotalPages - 1);
@@ -45,13 +48,13 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
         setError(result.error);
       }
     });
-  }, []);
+  }, [onRecipesChange]);
 
   const handleClear = useCallback(() => {
-    setRecipes([]);
+    onRecipesChange([]);
     setCurrentPage(0);
     setError(null);
-  }, []);
+  }, [onRecipesChange]);
 
   const handlePrevious = useCallback(() => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
