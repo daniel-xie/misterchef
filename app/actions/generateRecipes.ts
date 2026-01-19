@@ -56,6 +56,7 @@ Effort levels: 1 = Easy (beginner-friendly), 2 = Medium (some skill required), 3
       text: {
         format: zodTextFormat(RecipesResponseSchema, "recipes_response"),
       },
+      reasoning: { effort: "minimal" },
     });
 
     const parsed = response.output_parsed;

@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback } from "react";
 import { RecipeCard } from "./RecipeCard";
 import { RecipeCardSkeleton } from "./RecipeCardSkeleton";
+import { RecipeDetailOverlay } from "./RecipeDetailOverlay";
 import { generateRecipes } from "@/app/actions/generateRecipes";
 import type { Recipe } from "@/app/types/recipe";
 
@@ -17,6 +18,9 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+
+  const selectedRecipe = recipes.find((r) => r.id === selectedRecipeId) ?? null;
 
   const totalPages = Math.ceil(recipes.length / RECIPES_PER_PAGE);
   const currentRecipes = recipes.slice(
@@ -90,7 +94,13 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
 
       <div className="flex flex-col lg:flex-row flex-wrap gap-6 justify-center">
         {currentRecipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            layoutId={`recipe-card-${recipe.id}`}
+            isSelected={selectedRecipeId === recipe.id}
+            onClick={() => setSelectedRecipeId(recipe.id)}
+          />
         ))}
 
         {isPending && (
@@ -134,6 +144,14 @@ export function RecipeGenerator({ initialRecipes }: RecipeGeneratorProps) {
           suggestions!
         </p>
       )}
+
+      <RecipeDetailOverlay
+        recipe={selectedRecipe}
+        layoutId={
+          selectedRecipe ? `recipe-card-${selectedRecipe.id}` : undefined
+        }
+        onClose={() => setSelectedRecipeId(null)}
+      />
     </div>
   );
 }
